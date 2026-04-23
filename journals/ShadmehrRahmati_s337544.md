@@ -1,7 +1,5 @@
 # Journal – Shadmehr Rahmati
 
-> Project: Express.js
-
 ## Entry 1 – Week of 13 and 20 April
 
 **Activities:**
