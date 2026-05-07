@@ -18,7 +18,7 @@
 - Overview: all sections — Purpose and Stakeholders, System Description, Development Activity.
 
 ---
-## Entry 1 – Week of 30 April and 4 May
+## Entry 2 – Week of 30 April and 4 May
 
 **Activities:**
 
