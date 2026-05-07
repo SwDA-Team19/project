@@ -37,8 +37,6 @@ express.js (entry)
 
 `view.js` has the fewest dependencies (only `debug` and Node built-ins). Its sole responsibility is file-system lookup and delegating rendering to an engine callback, so it has no need for third-party libraries.
 
-`utils.js` has no internal dependencies at all, making it a pure utility leaf — a healthy design choice that avoids circular imports.
-
 ### 1.3 Knowledge Dependencies (Co-change)
 
 Examining `History.md` across Express 5.x milestones reveals the following co-change clusters:
