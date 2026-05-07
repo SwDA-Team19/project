@@ -20,6 +20,8 @@ The key architectural decision visible at this level is **minimalism**: Express 
 
 ## 2. Container Level (C4 Level 2)
 
+![Architecture diagram 2](img/architecture-diagram-02.svg)
+
 ## 3. Component Level (C4 Level 3)
 
 ## 4. Architectural Characteristics
