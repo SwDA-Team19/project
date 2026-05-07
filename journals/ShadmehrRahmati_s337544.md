@@ -18,3 +18,22 @@
 - Overview: all sections — Purpose and Stakeholders, System Description, Development Activity.
 
 ---
+## Entry 1 – Week of 30 April and 4 May
+
+**Activities:**
+
+- Divided the project tasks into two parts: Software Design (Shadmehr and Peyman) and Software Architecture (Andrea and Leonardo).
+- Re-read all six files in lib/ with a focus on require() calls to map the full dependency graph, both internal and external.
+- Used grep to extract every require statement per module and built the directed dependency graph manually, noting which modules are leaves (utils.js, view.js, request.js) and which have wide fan-out (response.js with 12 external deps).
+- Analysed History.md across Express 5.x milestones to identify co-change clusters — which files tend to be modified together — and compared these against the static import graph to find inconsistencies.
+- Identified the key inconsistency: request.js and response.js co-change frequently despite having no direct require relationship, driven by protocol-level cohesion rather than code structure.
+- Identified four design patterns in the codebase: Factory (createApplication() in express.js), Chain of Responsibility (middleware stack via t he router package), Template Method (app.render() + pluggable engine in application.js / view.js), and Strategy (compileETag / compileQueryParser in utils.js).
+- For each pattern: located the exact files and line numbers, identified which classes play which role, wrote up the problem it solves, and evaluated a concrete alternative with pros and cons.
+- Drafted the full Design report: Dependencies section (method, code graph, co-change analysis and inconsistencies), all four pattern analyses, and the Summary tying both sections back to Express's two overriding design goals.
+
+**Effort:** ~7 hours
+
+**Contributions to report:**
+
+- Design: all sections — Method and Tools, Code Dependency Graph, Knowledge Dependencies (Co-change), all four pattern analyses (Factory, Chain of Responsibility, Template Method, Strategy), Summary.
+
