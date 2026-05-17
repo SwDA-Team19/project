@@ -70,6 +70,17 @@ Express does not expose a class. When you call `require('express')`, you get bac
 - *Creator*: `createApplication()` (`lib/express.js`, line 36)
 - *Product*: the `app` function object, mixed with `EventEmitter.prototype` and `application` prototype via `merge-descriptors`
 
+```javascript
+// lib/express.js — this is what runs when you call require('express')()
+function createApplication() {
+  var app = function(req, res, next) { app.handle(req, res, next); };
+  mixin(app, EventEmitter.prototype, false);  // gives app event-emitter methods
+  mixin(app, proto, false);                   // gives app all express methods (use, get, listen…)
+  app.init();
+  return app;
+}
+```
+
 ![Factory pattern in Express.js](img/factory.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L36-L56
@@ -91,6 +102,20 @@ The middleware pipeline is the defining feature of Express — it is what the en
 - *Concrete Handlers*: any function registered via `app.use()` or a route verb
 - *Chain manager*: `Router` (external `router` package, delegated by `application.js` line 222)
 - *Client*: the incoming HTTP request dispatched by Node's `http.Server`
+
+```javascript
+// lib/application.js — incoming request gets handed straight to the router
+app.handle = function handle(req, res, callback) {
+  var router = this._router;
+  router.handle(req, res, done);
+};
+
+// each layer in the stack either sends a response or calls next() to keep going
+app.use(function logger(req, res, next) {
+  console.log(req.method, req.url);
+  next();  // pass control to the next layer
+});
+```
 
 ![Express.js middleware chain of responsibility](img/chain_of_responsibility.png)
 
@@ -114,6 +139,18 @@ Express supports EJS, Pug, Handlebars, and any other template engine without a s
 - *Concrete Class*: any compliant engine (EJS, Pug, Handlebars — each provides a `__express` export)
 - *Supporting class*: `View` (`lib/view.js`) handles the file-system lookup sub-step
 
+```javascript
+// lib/application.js — render() owns the algorithm but does not render anything itself
+app.render = function render(name, options, callback) {
+  var view = this.cache[name];
+  if (!view) {
+    view = new View(name, { ... });  // view.js handles the file-path resolution
+    this.cache[name] = view;
+  }
+  view.render(renderOptions, done);  // actual rendering goes to whichever engine was registered
+};
+```
+
 ![Template Method](img/template_method.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L522  
@@ -136,6 +173,17 @@ This is a more contained application of the Strategy pattern than the previous e
 - *Concrete strategies*: `exports.etag` (strong), `exports.wetag` (weak), `querystring.parse` (simple), `parseExtendedQueryString` (extended), or a user-supplied function
 - *Context*: `app` object — stores the compiled strategy via `app.set('etag fn', compileETag(val))`
 - *Strategy selector*: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 130, 162)
+
+```javascript
+// lib/utils.js — called once at startup, picks the right function and stores it
+exports.compileETag = function compileETag(val) {
+  if (val === 'strong') return exports.etag;
+  if (val === 'weak')   return exports.wetag;
+  if (typeof val === 'function') return val;  // user passed their own, just use it
+  throw new TypeError('...');
+};
+// compileQueryParser at line 162 does the same thing for 'simple' vs 'extended'
+```
 
 ![Strategy](img/strategy.png)
 
