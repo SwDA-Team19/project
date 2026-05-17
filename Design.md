@@ -67,7 +67,7 @@ Express does not expose a class. When you call `require('express')`, you get bac
 **Description:** The exported module entry point is not a class but a factory function `createApplication()`. Calling `require('express')` returns this function; calling it returns a fully initialised `app` object.
 
 **Participants:**
-- *Creator*: `createApplication()` (`lib/express.js`, line 36)
+- *Creator*: `createApplication()` (`lib/express.js`, line 28)
 - *Product*: the `app` function object, mixed with `EventEmitter.prototype` and `application` prototype via `merge-descriptors`
 
 ```javascript
@@ -83,7 +83,7 @@ function createApplication() {
 
 <img src="img/factory.png" width="500" alt="Factory pattern in Express.js">
 
-**Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L36-L56
+**Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L28-L48
 
 **Problem solved:** Node.js applications need a single, stateful HTTP handler object. A plain constructor (`new Express()`) would work but would break the CommonJS idiom of calling `require('express')()` directly. The factory hides object wiring (mixin of two prototypes + initialisation) behind a single call, and allows the framework to set up `app.request` and `app.response` as prototype-derived objects in one place.
 
@@ -100,7 +100,7 @@ The middleware pipeline is the defining feature of Express — it is what the en
 **Participants:**
 - *Handler interface*: middleware functions with signature `(req, res, next)`
 - *Concrete Handlers*: any function registered via `app.use()` or a route verb
-- *Chain manager*: `Router` (external `router` package, delegated by `application.js` line 222)
+- *Chain manager*: `Router` (external `router` package, delegated by `application.js` line 141)
 - *Client*: the incoming HTTP request dispatched by Node's `http.Server`
 
 ```javascript
@@ -119,7 +119,7 @@ app.use(function logger(req, res, next) {
 
 <img src="img/chain_of_responsibility.png" width="500" alt="Express.js middleware chain of responsibility">
 
-**Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L181-L242
+**Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L141-L165
 
 **Problem solved:** HTTP request processing is inherently cross-cutting (logging, authentication, body parsing, business logic, error handling all need to run in sequence). The chain pattern allows each concern to be developed independently and composed at startup time, without any single module needing to know about the others.
 
@@ -134,7 +134,7 @@ Express supports EJS, Pug, Handlebars, and any other template engine without a s
 **Description:** `app.render(name, options, callback)` defines the *skeleton* of the view-rendering algorithm: look up the view in cache → resolve the file → delegate to the engine. The concrete rendering step is deferred to an interchangeable engine function stored in `app.engines`.
 
 **Participants:**
-- *Abstract Class (template)*: `app.render()` in `application.js` (lines 522–574)
+- *Abstract Class (template)*: `app.render()` in `application.js` (lines 505–560)
 - *Primitive operation (hook)*: the engine callback stored in `app.engines[ext]` — set via `app.engine(ext, fn)`
 - *Concrete Class*: any compliant engine (EJS, Pug, Handlebars — each provides a `__express` export)
 - *Supporting class*: `View` (`lib/view.js`) handles the file-system lookup sub-step
@@ -153,8 +153,8 @@ app.render = function render(name, options, callback) {
 
 ![Template Method](img/template_method.png)
 
-**Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L522  
-https://github.com/expressjs/express/blob/master/lib/view.js#L133
+**Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L505  
+https://github.com/expressjs/express/blob/master/lib/view.js#L120
 
 **Problem solved:** Express must support an open-ended set of template languages without modifying its core. The Template Method pattern fixes the algorithm structure (caching, lookup, error handling) while keeping the rendering step open for extension. This satisfies the Open/Closed Principle: new engines can be plugged in without touching Express source code.
 
@@ -172,7 +172,7 @@ This is a more contained application of the Strategy pattern than the previous e
 - *Strategy interface*: `(body, encoding?) => string` for ETag; `(str) => object` for query parsing
 - *Concrete strategies*: `exports.etag` (strong), `exports.wetag` (weak), `querystring.parse` (simple), `parseExtendedQueryString` (extended), or a user-supplied function
 - *Context*: `app` object — stores the compiled strategy via `app.set('etag fn', compileETag(val))`
-- *Strategy selector*: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 130, 162)
+- *Strategy selector*: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 123, 148)
 
 ```javascript
 // lib/utils.js — called once at startup, picks the right function and stores it
@@ -187,8 +187,8 @@ exports.compileETag = function compileETag(val) {
 
 ![Strategy](img/strategy.png)
 
-**Code link:** https://github.com/expressjs/express/blob/master/lib/utils.js#L130  
-https://github.com/expressjs/express/blob/master/lib/utils.js#L162
+**Code link:** https://github.com/expressjs/express/blob/master/lib/utils.js#L123  
+https://github.com/expressjs/express/blob/master/lib/utils.js#L148
 
 **Problem solved:** Different deployments have different performance and correctness requirements for ETag generation (weak vs strong) and query string parsing (simple vs extended/qs). Rather than branching inside every request handler, the strategy is compiled once at startup from a simple configuration value. This keeps hot-path code branch-free and allows users to inject custom implementations without patching the framework.
 
