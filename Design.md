@@ -19,6 +19,7 @@ express.js (entry)
  │    └── utils.js
  └── [router – external npm package]
 ```
+![Dependency Graph](img/dependency_graph.png)
 
 **External dependencies per module:**
 
@@ -69,6 +70,8 @@ Express does not expose a class. When you call `require('express')`, you get bac
 - *Creator*: `createApplication()` (`lib/express.js`, line 36)
 - *Product*: the `app` function object, mixed with `EventEmitter.prototype` and `application` prototype via `merge-descriptors`
 
+![Factory pattern in Express.js](img/factory.png)
+
 **Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L36-L56
 
 **Problem solved:** Node.js applications need a single, stateful HTTP handler object. A plain constructor (`new Express()`) would work but would break the CommonJS idiom of calling `require('express')()` directly. The factory hides object wiring (mixin of two prototypes + initialisation) behind a single call, and allows the framework to set up `app.request` and `app.response` as prototype-derived objects in one place.
@@ -88,6 +91,8 @@ The middleware pipeline is the defining feature of Express — it is what the en
 - *Concrete Handlers*: any function registered via `app.use()` or a route verb
 - *Chain manager*: `Router` (external `router` package, delegated by `application.js` line 222)
 - *Client*: the incoming HTTP request dispatched by Node's `http.Server`
+
+![Express.js middleware chain of responsibility](img/chain_of_responsibility.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L181-L242
 
@@ -109,6 +114,8 @@ Express supports EJS, Pug, Handlebars, and any other template engine without a s
 - *Concrete Class*: any compliant engine (EJS, Pug, Handlebars — each provides a `__express` export)
 - *Supporting class*: `View` (`lib/view.js`) handles the file-system lookup sub-step
 
+![Template Method](img/template_method.png)
+
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L522  
 https://github.com/expressjs/express/blob/master/lib/view.js#L133
 
@@ -129,6 +136,8 @@ This is a more contained application of the Strategy pattern than the previous e
 - *Concrete strategies*: `exports.etag` (strong), `exports.wetag` (weak), `querystring.parse` (simple), `parseExtendedQueryString` (extended), or a user-supplied function
 - *Context*: `app` object — stores the compiled strategy via `app.set('etag fn', compileETag(val))`
 - *Strategy selector*: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 130, 162)
+
+![Strategy](img/strategy.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/utils.js#L130  
 https://github.com/expressjs/express/blob/master/lib/utils.js#L162
