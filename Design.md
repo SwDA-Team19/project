@@ -81,7 +81,7 @@ function createApplication() {
 }
 ```
 
-![Factory pattern in Express.js](img/factory.png)
+<img src="img/factory.png" width="500" alt="Factory pattern in Express.js">
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L36-L56
 
@@ -117,7 +117,7 @@ app.use(function logger(req, res, next) {
 });
 ```
 
-![Express.js middleware chain of responsibility](img/chain_of_responsibility.png)
+<img src="img/chain_of_responsibility.png" width="500" alt="Express.js middleware chain of responsibility">
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L181-L242
 
