@@ -8,17 +8,6 @@ Code dependencies were analysed by inspecting `require()` calls in each file und
 Knowledge dependencies (co-change) were approximated by examining the project's `History.md` changelog, which records which files are typically modified together across releases.
 
 ### 1.2 Code Dependency Graph
-
-```
-express.js (entry)
- ├── application.js
- │    ├── view.js          (only internal–internal edge besides utils)
- │    └── utils.js
- ├── request.js            (no internal deps)
- ├── response.js
- │    └── utils.js
- └── [router – external npm package]
-```
 ![Dependency Graph](img/dependency_graph.png)
 
 **External dependencies per module:**
