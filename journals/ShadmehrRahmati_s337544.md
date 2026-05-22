@@ -37,3 +37,19 @@
 
 - Design: all sections — Method and Tools, Code Dependency Graph, Knowledge Dependencies (Co-change), all four pattern analyses (Factory, Chain of Responsibility, Template Method, Strategy), Summary.
 
+---
+## Entry 3 – Week of 11 and 18 May
+
+**Activities:**
+
+- Worked with Peyman on a final review of the Design report, checked remaining sections for consistency with the dependency graph and pattern analyses, and completed the Design part of the project.
+- After the Design report was finished, drafted an initial Software Architecture document on my own (`Architecture-v2.md`) as a suggested starting point for Andrea and Leonardo, so they could build on or refine it for the Architecture section of the report.
+- Structured the architecture draft around C4 views (Context and Container levels), stakeholder roles, and diagrams aligned with the `lib/` module structure, to give the architecture team a concrete baseline to work from.
+
+**Effort:** ~8 hours
+
+**Contributions to report:**
+
+- Design: final review and completion (with Peyman).
+- Architecture: initial draft version (`Architecture-v2.md`) proposed for Andrea and Leonardo to develop further.
+
