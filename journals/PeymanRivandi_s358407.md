@@ -27,3 +27,18 @@ Effort: ~6 hours
 
 Contributions to report:
 Design: pattern analyses (Factory, Chain of Responsibility, Template Method, Strategy); Summary (jointly with Shadmehr).
+
+---
+
+## Entry 3 - Week of 11 and 18 May
+
+These two weeks I made the diagrams for the Design report. I drew one for the code dependency graph and one for each of the four patterns: Factory, Chain of Responsibility, Template Method, and Strategy, and put them into Design.md. It took a while to get them looking right but I think they make the report a lot clearer.
+
+After that, Shadmehr and I went through the Design report together one more time to check everything was consistent, the dependency section lined up with the pattern analyses, and nothing was missing or off. That was the last thing we needed to do on the Design side.
+
+I also read through the Architecture file that Andrea and Leonardo put together, just to see how the two reports fit together and make sure there was nothing conflicting between what we wrote and what they wrote.
+
+Effort: ~9 hours
+
+Contributions to report:
+Design: diagrams (dependency graph, Factory, Chain of Responsibility, Template Method, Strategy); final review (with Shadmehr).
