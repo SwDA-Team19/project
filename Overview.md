@@ -1,4 +1,4 @@
-# Overview (Express.js)
+# Overview – Express.js
 
 ## Purpose and Stakeholders
 
