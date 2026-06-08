@@ -63,3 +63,13 @@
 
 
 ---
+## Entry 5 – Week of 8 June
+
+**Activities:**
+
+- final check of whole project 
+
+**Effort:** ~30 min
+
+
+---
