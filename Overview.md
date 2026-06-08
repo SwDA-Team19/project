@@ -10,9 +10,9 @@ The people who interact with Express can be grouped into a few categories. The m
 
 At its core, Express does three things: it augments Node's raw `req` and `res` objects with useful helpers, it provides a routing layer so that different URL paths can be handled by different functions, and it implements a middleware pipeline the mechanism that makes all of this composable.
 
-The middleware pipeline is the central idea. Every incoming HTTP request passes through an ordered stack of functions, each with the signature `(req, res, next)`. A function can inspect or modify the request, send a response and terminate the chain, or call `next()` to pass control to the next function in the stack. This lets things like body parsing, authentication checks, logging, and business logic sit side by side without any of them needing to know about the others.
+The [middleware pipeline](Design.md#chain-of-responsibility-pattern) is the central idea. Every incoming HTTP request passes through an ordered stack of functions, each with the signature `(req, res, next)`. A function can inspect or modify the request, send a response and terminate the chain, or call `next()` to pass control to the next function in the stack. This lets things like body parsing, authentication checks, logging, and business logic sit side by side without any of them needing to know about the others.
 
-The codebase that implements all of this is surprisingly small. The entire `lib/` directory the actual framework, not tests or examples — contains six files totalling roughly 2 800 lines of JavaScript. Below is a breakdown of what each one does:
+The codebase that implements all of this is surprisingly small. The entire `lib/` directory the actual framework, not tests or examples — contains six files totalling roughly 2 800 lines of JavaScript. Below is a breakdown of what each one does; the same modules are analyzed in more detail in the [component-level architecture view](Architecture.md#component-level-architecture):
 
 | File | Role | Lines |
 | --- | --- | --- |
@@ -41,6 +41,8 @@ A summary of the key statistics:
 | Latest stable version | 5.2.1 |
 
 The ~66 000 GitHub stars place Express among the most widely recognised Node.js projects ever, which reflects its historical dominance rather than just current adoption. More telling from an architectural standpoint is the ratio of 300+ total contributors to only ~6 active TC members. This is a classic open-source pattern: a long tail of occasional contributors, with a very small group carrying the ongoing maintenance burden. It represents a real bus-factor risk, and it is part of why the OpenJS Foundation's governance structure exists to ensure the project does not collapse if individual maintainers step back.
+
+The C4 diagrams referenced in the architecture analysis were produced with Structurizr, following the Context, Container, and Component levels used in [Architecture.md](Architecture.md).
 
 ## Development Activity
 

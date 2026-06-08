@@ -1,4 +1,5 @@
 # Software Design – Express.js
+
 ## 1. Dependencies
 
 ### 1.1 Method and Tools
@@ -7,19 +8,22 @@ Code dependencies were analysed by inspecting `require()` calls in each file und
 
 Knowledge dependencies (co-change) were approximated by examining the project's `History.md` changelog, which records which files are typically modified together across releases.
 
+<a id="code-dependency-graph"></a>
+
 ### 1.2 Code Dependency Graph
-![Dependency Graph](img/dependency_graph.png)
+
+![Dependency Graph](img/design-dependency-graph.png)
 
 **External dependencies per module:**
 
-| Module | External deps | Internal deps |
-|---|---|---|
-| `response.js` | 12 (content-disposition, http-errors, depd, encodeurl, escape-html, on-finished, mime-types, statuses, cookie-signature, cookie, send, vary) | utils.js |
-| `application.js` | 5 (finalhandler, debug, once, router, node:http/path) | view.js, utils.js |
-| `request.js` | 7 (accepts, type-is, fresh, range-parser, parseurl, proxy-addr, node:net/http) | — |
-| `utils.js` | 6 (content-type, etag, mime-types, proxy-addr, qs, node:querystring/buffer/http) | — |
-| `view.js` | 2 (debug, node:path/fs) | — |
-| `express.js` | 4 (body-parser, merge-descriptors, node:events, serve-static) | application.js, request.js, response.js |
+| Module           | External deps                                                                                                                                | Internal deps                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `response.js`    | 12 (content-disposition, http-errors, depd, encodeurl, escape-html, on-finished, mime-types, statuses, cookie-signature, cookie, send, vary) | utils.js                                |
+| `application.js` | 5 (finalhandler, debug, once, router, node:http/path)                                                                                        | view.js, utils.js                       |
+| `request.js`     | 7 (accepts, type-is, fresh, range-parser, parseurl, proxy-addr, node:net/http)                                                               | —                                       |
+| `utils.js`       | 6 (content-type, etag, mime-types, proxy-addr, qs, node:querystring/buffer/http)                                                             | —                                       |
+| `view.js`        | 2 (debug, node:path/fs)                                                                                                                      | —                                       |
+| `express.js`     | 4 (body-parser, merge-descriptors, node:events, serve-static)                                                                                | application.js, request.js, response.js |
 
 **Which files have most / fewest dependencies and why?**
 
@@ -31,16 +35,16 @@ Knowledge dependencies (co-change) were approximated by examining the project's 
 
 Examining `History.md` across Express 5.x milestones reveals the following co-change clusters:
 
-| Files often changed together | Reason |
-|---|---|
-| `response.js` + `utils.js` | New response helpers always require new utility functions (e.g., `setCharset`, `normalizeType`) |
-| `application.js` + `express.js` | Changes to the factory or app lifecycle affect both the entry point and the app prototype |
-| `request.js` + `response.js` | Content-negotiation changes (e.g., `res.format`, `req.accepts`) span both |
-| `view.js` + `application.js` | Changes to engine registration or render caching touch both |
+| Files often changed together    | Reason                                                                                          |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `response.js` + `utils.js`      | New response helpers always require new utility functions (e.g., `setCharset`, `normalizeType`) |
+| `application.js` + `express.js` | Changes to the factory or app lifecycle affect both the entry point and the app prototype       |
+| `request.js` + `response.js`    | Content-negotiation changes (e.g., `res.format`, `req.accepts`) span both                       |
+| `view.js` + `application.js`    | Changes to engine registration or render caching touch both                                     |
 
 **Inconsistencies with code dependencies:**
 
-- `request.js` and `response.js` have no direct *code* dependency on each other (neither `require`s the other), yet they co-change frequently. This is a knowledge coupling driven by the HTTP protocol: a change to how the request body is parsed often requires a corresponding change to response helpers.
+- `request.js` and `response.js` have no direct _code_ dependency on each other (neither `require`s the other), yet they co-change frequently. This is a knowledge coupling driven by the HTTP protocol: a change to how the request body is parsed often requires a corresponding change to response helpers.
 - `view.js` and `express.js` are not directly linked in the code graph, but they co-change whenever the view resolution algorithm is updated (since `express.js` sets the default `View` class).
 
 These inconsistencies are not design flaws; they reflect protocol-level cohesion that is difficult to capture through static import analysis alone. In practice, this means that a team maintaining Express should treat `request.js` and `response.js` as a logical unit for the purposes of code review and testing — a change to one almost always warrants checking the other, even though the import graph gives no indication of this. Similarly, `view.js` and `express.js` should be reviewed together whenever the view resolution algorithm is touched, despite having no direct `require` relationship.
@@ -49,6 +53,8 @@ These inconsistencies are not design flaws; they reflect protocol-level cohesion
 
 ## 2. Design Patterns
 
+<a id="factory-pattern"></a>
+
 ### 2.1 Factory (Creational) — `createApplication()` in `lib/express.js`
 
 Express does not expose a class. When you call `require('express')`, you get back a function, and calling that function gives you a fully wired application object. This is the Factory pattern, and it is the first design decision a developer encounters when using the framework.
@@ -56,10 +62,11 @@ Express does not expose a class. When you call `require('express')`, you get bac
 **Description:** The exported module entry point is not a class but a factory function `createApplication()`. Calling `require('express')` returns this function; calling it returns a fully initialised `app` object.
 
 **Participants:**
-- *Creator*: `createApplication()` (`lib/express.js`, line 28)
-- *Product*: the `app` function object, mixed with `EventEmitter.prototype` and `application` prototype via `merge-descriptors`
 
-<img src="img/factory.png" width="500" alt="Factory pattern in Express.js">
+- _Creator_: `createApplication()` (`lib/express.js`, line 28)
+- _Product_: the `app` function object, mixed with `EventEmitter.prototype` and `application` prototype via `merge-descriptors`
+
+<img src="img/design-factory-pattern.png" width="500" alt="Factory pattern in Express.js">
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/express.js#L28-L48
 
@@ -69,6 +76,8 @@ Express does not expose a class. When you call `require('express')`, you get bac
 
 ---
 
+<a id="chain-of-responsibility-pattern"></a>
+
 ### 2.2 Chain of Responsibility (Behavioural) — Middleware Stack via `router`
 
 The middleware pipeline is the defining feature of Express — it is what the entire programming model is built around. Under the hood, it is a textbook Chain of Responsibility: a linear sequence of handler objects where each one decides whether to handle the request or pass it to the next.
@@ -76,12 +85,13 @@ The middleware pipeline is the defining feature of Express — it is what the en
 **Description:** Every call to `app.use()`, `app.get()`, etc. pushes a `Layer` object onto an ordered stack inside the `Router`. When a request arrives, the router iterates the stack calling each layer's `handle()` method and passing a `next` callback. A layer either terminates the cycle (by sending a response) or calls `next()` to forward control to the next layer.
 
 **Participants:**
-- *Handler interface*: middleware functions with signature `(req, res, next)`
-- *Concrete Handlers*: any function registered via `app.use()` or a route verb
-- *Chain manager*: `Router` (external `router` package, delegated by `application.js` line 141)
-- *Client*: the incoming HTTP request dispatched by Node's `http.Server`
 
-<img src="img/chain_of_responsibility.png" width="500" alt="Express.js middleware chain of responsibility">
+- _Handler interface_: middleware functions with signature `(req, res, next)`
+- _Concrete Handlers_: any function registered via `app.use()` or a route verb
+- _Chain manager_: `Router` (external `router` package, delegated by `application.js` line 141)
+- _Client_: the incoming HTTP request dispatched by Node's `http.Server`
+
+<img src="img/design-chain-of-responsibility.png" width="500" alt="Express.js middleware chain of responsibility">
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L141-L165
 
@@ -91,19 +101,22 @@ The middleware pipeline is the defining feature of Express — it is what the en
 
 ---
 
+<a id="template-method-pattern"></a>
+
 ### 2.3 Template Method (Behavioural) — View Rendering in `lib/application.js` + `lib/view.js`
 
 Express supports EJS, Pug, Handlebars, and any other template engine without a single line of engine-specific code in its core. This is possible because `app.render()` implements the Template Method pattern: it owns the algorithm skeleton (cache check → file lookup → render), but delegates the actual rendering step to whichever engine the developer registered.
 
-**Description:** `app.render(name, options, callback)` defines the *skeleton* of the view-rendering algorithm: look up the view in cache → resolve the file → delegate to the engine. The concrete rendering step is deferred to an interchangeable engine function stored in `app.engines`.
+**Description:** `app.render(name, options, callback)` defines the _skeleton_ of the view-rendering algorithm: look up the view in cache → resolve the file → delegate to the engine. The concrete rendering step is deferred to an interchangeable engine function stored in `app.engines`.
 
 **Participants:**
-- *Abstract Class (template)*: `app.render()` in `application.js` (lines 505–560)
-- *Primitive operation (hook)*: the engine callback stored in `app.engines[ext]` — set via `app.engine(ext, fn)`
-- *Concrete Class*: any compliant engine (EJS, Pug, Handlebars — each provides a `__express` export)
-- *Supporting class*: `View` (`lib/view.js`) handles the file-system lookup sub-step
 
-![Template Method](img/template_method.png)
+- _Abstract Class (template)_: `app.render()` in `application.js` (lines 505–560)
+- _Primitive operation (hook)_: the engine callback stored in `app.engines[ext]` — set via `app.engine(ext, fn)`
+- _Concrete Class_: any compliant engine (EJS, Pug, Handlebars — each provides a `__express` export)
+- _Supporting class_: `View` (`lib/view.js`) handles the file-system lookup sub-step
+
+![Template Method](img/design-template-method.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/application.js#L505  
 https://github.com/expressjs/express/blob/master/lib/view.js#L120
@@ -114,19 +127,22 @@ https://github.com/expressjs/express/blob/master/lib/view.js#L120
 
 ---
 
+<a id="strategy-pattern"></a>
+
 ### 2.4 Strategy (Behavioural) — Pluggable ETag and Query Parser in `lib/utils.js`
 
 This is a more contained application of the Strategy pattern than the previous examples — it operates at the level of two utility functions rather than a whole subsystem — but it illustrates the principle clearly and has a direct impact on runtime performance. The key insight is that Express compiles a configuration value into a concrete algorithm function once at startup, so the hot request path never branches on settings.
 
-**Description:** `compileETag(val)` and `compileQueryParser(val)` are strategy-selector functions. Given a setting value (string, boolean, or custom function), they return a *strategy function* — a concrete algorithm conforming to a common interface — which is then stored on the app settings and invoked at request time.
+**Description:** `compileETag(val)` and `compileQueryParser(val)` are strategy-selector functions. Given a setting value (string, boolean, or custom function), they return a _strategy function_ — a concrete algorithm conforming to a common interface — which is then stored on the app settings and invoked at request time.
 
 **Participants:**
-- *Strategy interface*: `(body, encoding?) => string` for ETag; `(str) => object` for query parsing
-- *Concrete strategies*: `exports.etag` (strong), `exports.wetag` (weak), `querystring.parse` (simple), `parseExtendedQueryString` (extended), or a user-supplied function
-- *Context*: `app` object — stores the compiled strategy via `app.set('etag fn', compileETag(val))`
-- *Strategy selector*: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 123, 148)
 
-![Strategy](img/strategy.png)
+- _Strategy interface_: `(body, encoding?) => string` for ETag; `(str) => object` for query parsing
+- _Concrete strategies_: `exports.etag` (strong), `exports.wetag` (weak), `querystring.parse` (simple), `parseExtendedQueryString` (extended), or a user-supplied function
+- _Context_: `app` object — stores the compiled strategy via `app.set('etag fn', compileETag(val))`
+- _Strategy selector_: `compileETag()` / `compileQueryParser()` in `utils.js` (lines 123, 148)
+
+![Strategy](img/design-strategy-pattern.png)
 
 **Code link:** https://github.com/expressjs/express/blob/master/lib/utils.js#L123  
 https://github.com/expressjs/express/blob/master/lib/utils.js#L148
