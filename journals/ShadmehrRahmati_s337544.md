@@ -52,4 +52,12 @@
 
 - Design: final review and completion (with Peyman).
 - Architecture: initial draft version (`Architecture-v2.md`) proposed for Andrea and Leonardo to develop further.
+---
+## Entry 4 – Week of 25 May and 1 June
 
+**Activities:**
+
+- check overview and design file to be exact follow requirements of project and fix some parts of that, read carfully of these two files and edit some parts of that 
+
+**Effort:** ~1 hours
+---
