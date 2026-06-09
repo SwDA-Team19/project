@@ -15,7 +15,7 @@ Overview: Development Activity; stakeholder conflict analysis in Purpose and Sta
 
 ---
 
-## Entry 2 - Week of 30 April and 4 May
+## Entry 2 - Week of 27 April and 4 May
 
 We split the work with the team at the start of this week, Shadmehr and I took Software Design, Andrea and Leonardo took Software Architecture. Shadmehr and I then split our part further: he focused on mapping the dependencies while I took the lead on the design patterns, though we talked through everything together as we went.
 
@@ -42,3 +42,27 @@ Effort: ~9 hours
 
 Contributions to report:
 Design: diagrams (dependency graph, Factory, Chain of Responsibility, Template Method, Strategy); final review (with Shadmehr).
+
+---
+
+## Entry 4 - Week of 25 May and 1 June
+
+The four of us met to bring the Design and Architecture sections together into one report. Andrea and Leonardo had been working on the C4 diagrams and the architecture analysis separately, so this was the first time we sat down and compared the two parts. We went through the cross-references, made sure the pattern descriptions and architecture diagrams were saying consistent things about the same modules, and fixed a few spots where the wording didn't match.
+
+I also went back through the Design file on my own and read it against the project requirements more carefully. There were a few small things to fix, some wording and minor formatting issues, nothing major but worth sorting before the final submission.
+
+Effort: ~3 hours
+
+Contributions to report:
+Design: consistency review and minor fixes; integration with Architecture section (with full team).
+
+---
+
+## Entry 5 - Week of 8 June
+
+This was mostly a final check. I read through the whole report one more time to catch anything still off, formatting, phrasing, things that didn't read well. We did a last pass as a team to make sure everything was in order and the diagrams and text were all aligned before submitting.
+
+Effort: ~2 hours
+
+Contributions to report:
+Design: final proofread and formatting fixes.
